@@ -69,8 +69,8 @@ def check_response(response):
     Возвращение списка домашних работ.
     """
     if not response:
-        logger.error(f'отсутствие ожидаемых ключей в ответе API')
-        send_message(bot, f'отсутствие ожидаемых ключей в ответе API')
+        logger.error('отсутствие ожидаемых ключей в ответе API')
+        send_message(bot, 'отсутствие ожидаемых ключей в ответе API')
     homework = response.get('homeworks')
     homework = homework[0]
     return homework
