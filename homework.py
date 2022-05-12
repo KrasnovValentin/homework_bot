@@ -81,10 +81,9 @@ def parse_status(homework):
     homework_status = homework['status']
     verdict = HOMEWORK_STATUSES[homework_status]
     message = f'Изменился статус проверки работы "{homework_name}". {verdict}'
-    if homework_status is None:
+    if homework_status is None and homework_name is None:
         logger.error('недокументированный статус домашней работы')
         send_message(bot, 'недокументированный статус домашней работы')
-    elif homework_name is None:
         logger.error('нет названия домашней работы')
         send_message(bot, 'нет названия домашней работы')
     return message
