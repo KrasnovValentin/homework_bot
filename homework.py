@@ -56,8 +56,11 @@ def get_api_answer(current_timestamp):
     """Запрос к API Яндекс-Практикума."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    homework = requests.get(ENDPOINT, headers=HEADERS, params=params)
-    response = homework.json()
+    response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    if response.status_code != 200:
+        logger.error('отсутствие подключения к API')
+        send_message(bot, 'отсутствие подключения к API')
+    response = response.json()
     return response
 
 
@@ -68,9 +71,8 @@ def check_response(response):
     if not response:
         logger.error('отсутствие ожидаемых ключей в ответе API')
         send_message(bot, 'отсутствие ожидаемых ключей в ответе API')
-    else:
-        homework = response.get('homeworks')[0]
-        return homework
+    homework = response.get('homeworks')[0]
+    return homework
 
 
 def parse_status(homework):
@@ -79,24 +81,26 @@ def parse_status(homework):
     homework_status = homework['status']
     verdict = HOMEWORK_STATUSES[homework_status]
     message = f'Изменился статус проверки работы "{homework_name}". {verdict}'
-    if homework['status'] is None:
+    if homework_status is None:
         logger.error('недокументированный статус домашней работы')
         send_message(bot, 'недокументированный статус домашней работы')
-    else:
-        return message
+    elif homework_name is None:
+        logger.error('нет названия домашней работы')
+        send_message(bot, 'нет названия домашней работы')
+    return message
 
 
-def check_tokens(prtoken, tlgtoken, tlgchatid):
+def check_tokens():
     """Проверка наличия переменных окружения."""
-    if not prtoken:
+    if not PRACTICUM_TOKEN:
         logger.critical(
             'отсутствие обязательной переменной окружения '
             'PRACTICUM_TOKEN во время запуска бота ')
-    elif not tlgtoken:
+    elif not TELEGRAM_TOKEN:
         logger.critical(
             'отсутствие обязательной переменной окружения'
             ' TELEGRAM_TOKEN во время запуска бота ')
-    elif not tlgchatid:
+    elif not TELEGRAM_CHAT_ID:
         logger.critical(
             'отсутствие обязательной переменной окружения'
             ' TELEGRAM_CHAT_ID во время запуска бота ')
@@ -108,7 +112,7 @@ def main():
     """Основная логика работы бота."""
 
 
-if check_tokens(PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID):
+if check_tokens():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     status = []
