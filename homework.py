@@ -55,15 +55,16 @@ def send_message(bot, message):
 def get_api_answer(current_timestamp):
     """Запрос к API Яндекс-Практикума."""
     timestamp = current_timestamp or int(time.time())
-    params = {'from_date': 1652347838}
+    params = {'from_date': timestamp}
     homework = requests.get(ENDPOINT, headers=HEADERS, params=params)
     response = homework.json()
     return response
 
 
 def check_response(response):
-    """Проверка API на корректность и возвращение списка
-        домашних работ."""
+    """Проверка API на корректность.
+    Возвращение списка домашних работ.
+    """
     if not response:
         logger.error('отсутствие ожидаемых ключей в ответе API')
         send_message(bot, 'отсутствие ожидаемых ключей в ответе API')
@@ -135,6 +136,7 @@ if check_tokens(PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID):
             time.sleep(RETRY_TIME)
     updater.start_polling()
     updater.idle()
+    print(current_timestamp)
 
 if __name__ == '__main__':
     main()
