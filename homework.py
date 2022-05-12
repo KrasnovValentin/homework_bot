@@ -62,7 +62,9 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """ Проверка API на корректность и возвращение списка д/р."""
+    """ Проверка API на корректность и возвращение списка
+        домашних работ.
+    """
     if not response:
         logger.error('отсутствие ожидаемых ключей в ответе API')
         send_message(bot, 'отсутствие ожидаемых ключей в ответе API')
