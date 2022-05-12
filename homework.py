@@ -38,7 +38,8 @@ handler.setFormatter(formatter)
 
 
 def send_message(bot, message):
-    """ Отправка сообщения ботом."""
+    """ Отправка сообщения ботом. """
+
     if not bot.send_message(
         chat_id=TELEGRAM_CHAT_ID,
         text=message
@@ -53,7 +54,8 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """ Запрос к API Яндекс-Практикума."""
+    """ Запрос к API Яндекс-Практикума. """
+
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': 1652347838}
     homework = requests.get(ENDPOINT, headers=HEADERS, params=params)
@@ -62,9 +64,11 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """ Проверка API на корректность и возвращение списка
+    """
+        Проверка API на корректность и возвращение списка
         домашних работ.
     """
+
     if not response:
         logger.error('отсутствие ожидаемых ключей в ответе API')
         send_message(bot, 'отсутствие ожидаемых ключей в ответе API')
@@ -74,7 +78,8 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """ Извлечение статуса о домашней работе."""
+    """ Извлечение статуса о домашней работе. """
+
     homework_name = homework['lesson_name']
     homework_status = homework['status']
     verdict = HOMEWORK_STATUSES[homework_status]
@@ -87,7 +92,8 @@ def parse_status(homework):
 
 
 def check_tokens(prtoken, tlgtoken, tlgchatid):
-    """ Проверка наличия переменных окружения."""
+    """ Проверка наличия переменных окружения. """
+
     if not prtoken:
         logger.critical(
             'отсутствие обязательной переменной окружения '
@@ -105,7 +111,7 @@ def check_tokens(prtoken, tlgtoken, tlgchatid):
 
 
 def main():
-    """Основная логика работы бота."""
+    """ Основная логика работы бота. """
 
 
 if check_tokens(PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID):
