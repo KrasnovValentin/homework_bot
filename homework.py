@@ -56,12 +56,11 @@ def get_api_answer(current_timestamp):
     """Запрос к API Яндекс-Практикума."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    try:
-        response = requests.get(ENDPOINT, headers=HEADERS, params=params)
-        response = response.json()
-    except Exception as error:
-        logger.error(f'отсутствие подключения к API-{error}')
-        send_message(bot, f'отсутствие подключения к API-{error}')
+    response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    if response.status_code != 200:
+        logger.error('отсутствие подключения к API')
+        send_message(bot, 'отсутствие подключения к API')
+    response = response.json()
     return response
 
 
@@ -69,11 +68,11 @@ def check_response(response):
     """Проверка API на корректность.
     Возвращение списка домашних работ.
     """
-    try:
-        homework = response.get('homeworks')[0]
-    except Exception as error:
-        logger.error(f'отсутствие ожидаемых ключей в ответе API -{error}')
-        send_message(bot, f'отсутствие ожидаемых ключей в ответе API-{error}')
+    if not response:
+        logger.error(f'отсутствие ожидаемых ключей в ответе API')
+        send_message(bot, f'отсутствие ожидаемых ключей в ответе API')
+    homework = response.get('homeworks')
+    homework = homework[0]
     return homework
 
 
@@ -85,11 +84,9 @@ def parse_status(homework):
     message = f'Изменился статус проверки работы "{homework_name}". {verdict}'
     if homework_status is None:
         logger.error('недокументированный статус домашней работы')
-        raise KeyError('недокументированный статус домашней работы')
         send_message(bot, 'недокументированный статус домашней работы')
     if homework_name is None:
         logger.error('нет названия домашней работы')
-        raise KeyError('нет названия домашней работы')
         send_message(bot, 'нет названия домашней работы')
     return message
 
@@ -108,8 +105,7 @@ def check_tokens():
         logger.critical(
             'отсутствие обязательной переменной окружения'
             ' TELEGRAM_CHAT_ID во время запуска бота ')
-    else:
-        return True
+    return True
 
 
 def main():
