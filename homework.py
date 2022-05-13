@@ -59,21 +59,25 @@ def get_api_answer(current_timestamp):
     if response.status_code != 200:
         logger.error('отсутствие подключения к API')
         send_message(bot, 'отсутствие подключения к API')
-    response = response.json()
-    return response
+    return response.json()
 
 
 def check_response(response):
     """Проверка API на корректность.
     Возвращение списка домашних работ.
     """
-    if not response:
-        logger.error('отсутствие ожидаемых ключей в ответе API')
-        send_message(bot, 'отсутствие ожидаемых ключей в ответе API')
+    if not isinstance(response, dict):
+        raise TypeError('Формат ответа API отличается от ожидаемого')
     homework = response.get('homeworks')
-    if homework != []:
-        return homework[0]
-    print('Список работ пуст.')
+    if 'homeworks' is None:
+        raise KeyError('Ответ API не содержит ключ \'homeworks\'')
+        logger.error('Ответ API не содержит ключ \'homeworks\'')
+        send_message(bot,'Ответ API не содержит ключ \'homeworks\'')
+    if not isinstance(homework, list):
+        raise TypeError('Список домашних заданий не является списком')
+        logger.error('Список домашних заданий не является списком')
+        send_message(bot, 'Список домашних заданий не является списком')
+    return homework[0]
 
 
 def parse_status(homework):
