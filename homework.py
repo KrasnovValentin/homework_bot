@@ -80,19 +80,16 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлечение статуса о домашней работе."""
-    if homework:
-        homework_name = homework['lesson_name']
-        homework_status = homework['status']
-        verdict = HOMEWORK_STATUSES[homework_status]
-        message = f'Изменился статус проверки работы "{homework_name}". ' \
-                  f'{verdict}'
-        if homework_status is None:
-            logger.error('недокументированный статус домашней работы')
-            send_message(bot, 'недокументированный статус домашней работы')
-        if homework_name is None:
-            logger.error('нет названия домашней работы')
-            send_message(bot, 'нет названия домашней работы')
-        return message
+    homework_status = homework.get['status']
+    homework_name = homework['lesson_name']
+    if homework_status not in HOMEWORK_STATUSES.keys():
+        logger.error('недокументированный статус домашней работы')
+        send_message(bot, 'недокументированный статус домашней работы')
+        raise KeyError('недокументированный статус домашней работы')
+    verdict = HOMEWORK_STATUSES[homework_status]
+    message = f'Изменился статус проверки работы "{homework_name}". ' \
+              f'{verdict}'
+    return message
 
 
 def check_tokens():
@@ -119,6 +116,8 @@ def main():
 if check_tokens():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    status = ''
+    err_message = ''
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -127,7 +126,6 @@ if check_tokens():
                 send_message(bot, parse_status(homeworks_ok[0]))
             else:
                 logger.debug('Статус работ не изменился')
-                send_message(bot, 'Статус работ не изменился')
             current_timestamp = response.get('current_date', current_timestamp)
             time.sleep(RETRY_TIME)
         except Exception as error:
