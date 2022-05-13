@@ -26,7 +26,6 @@ HOMEWORK_STATUSES = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = StreamHandler()
@@ -38,17 +37,16 @@ handler.setFormatter(formatter)
 
 def send_message(bot, message):
     """Отправка сообщения ботом."""
-    if not bot.send_message(
-        chat_id=TELEGRAM_CHAT_ID,
-        text=message
-    ):
-        logger.error('Ошибка отправки сообщения')
-        send_message(bot, 'Ошибка отправки сообщения')
-    else:
+    try:
         bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
             text=message
         )
+    except Exception as error:
+        message = f'Ошибка отправки сообщения {error}'
+        logger.error(message)
+    else:
+        logger.info('Бот успешно отправил сообщение')
 
 
 def get_api_answer(current_timestamp):
@@ -69,7 +67,7 @@ def check_response(response):
     if not isinstance(response, dict):
         raise TypeError('Формат ответа API отличается от ожидаемого')
     homework = response.get('homeworks')
-    if 'homeworks' not in response:
+    if homework is None:
         raise KeyError('Ответ API не содержит ключ \'homeworks\'')
         logger.error('Ответ API не содержит ключ \'homeworks\'')
         send_message(bot, 'Ответ API не содержит ключ \'homeworks\'')
