@@ -81,7 +81,6 @@ def check_response(response):
 def parse_status(homework):
     """Извлечение статуса о домашней работе."""
     if homework:
-        homework = homework[0]
         homework_name = homework['lesson_name']
         homework_status = homework['status']
         verdict = HOMEWORK_STATUSES[homework_status]
@@ -121,28 +120,23 @@ def main():
 if check_tokens():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-    status = ''
-    err_message = ''
     while True:
         try:
-            get_api_answer(current_timestamp)
+            response = get_api_answer(current_timestamp)
+            homeworks_ok = check_response(response)
+            if homeworks_ok:
+                send_message(bot, parse_status(homeworks_ok[0]))
+            else:
+                logger.debug('Статус работ не изменился')
+            current_timestamp = response.get('current_date', current_timestamp)
+            time.sleep(RETRY_TIME)
         except Exception as error:
-            new_err_message = f'Ошибка при запросе к основному API {error}'
+            new_err_message = f'Сбой в работе программы {error}'
             logger.error(new_err_message, exc_info=True)
-            if new_err_message != err_message:
-                send_message(bot, new_err_message)
-            err_message = new_err_message
+            send_message(bot, new_err_message)
             time.sleep(RETRY_TIME)
         else:
-            response = get_api_answer(current_timestamp)
-            new_status = parse_status(check_response(response))
-            if new_status != status:
-                send_message(bot, new_status)
-                logger.info(f'Отправка сообщения: {new_status}')
-                break
-            else:
-                logger.debug('отсутствие в ответе новых статусов')
-            time.sleep(RETRY_TIME)
+            logger.critical('Сбой в работе бота')
     updater.start_polling()
     updater.idle()
     print(current_timestamp)
