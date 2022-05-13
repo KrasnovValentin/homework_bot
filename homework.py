@@ -1,3 +1,4 @@
+import sys
 import time
 import logging
 from logging import StreamHandler
@@ -17,7 +18,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 RETRY_TIME = 600
-ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
+ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/12'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 HOMEWORK_STATUSES = {
@@ -56,7 +57,7 @@ def get_api_answer(current_timestamp):
     response = requests.get(ENDPOINT, headers=HEADERS, params=params)
     if response.status_code != 200:
         logger.error('отсутствие подключения к API')
-        send_message(bot, 'отсутствие подключения к API')
+        raise TypeError('отсутствие подключения к API')
     return response.json()
 
 
@@ -70,21 +71,18 @@ def check_response(response):
     if homework is None:
         raise KeyError('Ответ API не содержит ключ \'homeworks\'')
         logger.error('Ответ API не содержит ключ \'homeworks\'')
-        send_message(bot, 'Ответ API не содержит ключ \'homeworks\'')
     if not isinstance(homework, list):
         raise TypeError('Список домашних заданий не является списком')
         logger.error('Список домашних заданий не является списком')
-        send_message(bot, 'Список домашних заданий не является списком')
     return homework
 
 
 def parse_status(homework_list):
     """Извлечение статуса о домашней работе."""
     homework_status = homework_list['status']
-    homework_name = homework_list['lesson_name']
+    homework_name = homework_list['homework_name']
     if homework_status not in HOMEWORK_STATUSES.keys():
         logger.error('недокументированный статус домашней работы')
-        send_message(bot, 'недокументированный статус домашней работы')
         raise KeyError('недокументированный статус домашней работы')
     verdict = HOMEWORK_STATUSES[homework_status]
     message = f'Изменился статус проверки работы "{homework_name}". ' \
@@ -94,30 +92,35 @@ def parse_status(homework_list):
 
 def check_tokens():
     """Проверка наличия переменных окружения."""
+    check = True
     if not PRACTICUM_TOKEN:
+        check = False
         logger.critical(
             'отсутствие обязательной переменной окружения '
             'PRACTICUM_TOKEN во время запуска бота ')
-    elif not TELEGRAM_TOKEN:
+    if not TELEGRAM_TOKEN:
+        check = False
         logger.critical(
             'отсутствие обязательной переменной окружения'
             ' TELEGRAM_TOKEN во время запуска бота ')
-    elif not TELEGRAM_CHAT_ID:
+    if not TELEGRAM_CHAT_ID:
+        check = False
         logger.critical(
             'отсутствие обязательной переменной окружения'
             ' TELEGRAM_CHAT_ID во время запуска бота ')
-    return True
+    return check
 
 
 def main():
     """Основная логика работы бота."""
+    if not check_tokens():
+        sys.exit('Программа остановлена')
 
-
-if check_tokens():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     status = ''
     err_message = ''
+
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -139,10 +142,9 @@ if check_tokens():
                 send_message(bot, new_err_message)
                 err_message = new_err_message
             time.sleep(RETRY_TIME)
-        else:
-            logger.debug('Бот работает нормально.')
     updater.start_polling()
     updater.idle()
+
 
 if __name__ == '__main__':
     main()
