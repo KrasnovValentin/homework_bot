@@ -5,7 +5,7 @@ import os
 
 import requests
 
-from telegram.ext import updater, Updater
+from telegram.ext import updater
 
 import telegram
 from dotenv import load_dotenv
