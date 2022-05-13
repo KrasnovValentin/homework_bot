@@ -78,10 +78,10 @@ def check_response(response):
     return homework
 
 
-def parse_status(homework):
+def parse_status(homework_list):
     """Извлечение статуса о домашней работе."""
-    homework_status = homework.get['status']
-    homework_name = homework['lesson_name']
+    homework_status = homework_list['status']
+    homework_name = homework_list['lesson_name']
     if homework_status not in HOMEWORK_STATUSES.keys():
         logger.error('недокументированный статус домашней работы')
         send_message(bot, 'недокументированный статус домашней работы')
@@ -116,23 +116,31 @@ def main():
 if check_tokens():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    status = ''
+    err_message = ''
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks_ok = check_response(response)
             if homeworks_ok:
-                send_message(bot, parse_status(homeworks_ok[0]))
+                new_status = parse_status(homeworks_ok[0])
+                if new_status != status:
+                    send_message(bot, new_status)
+                    status = new_status
+                logger.info(f'Отправка сообщения: {new_status}')
             else:
                 logger.debug('Статус работ не изменился')
             current_timestamp = response.get('current_date', current_timestamp)
             time.sleep(RETRY_TIME)
         except Exception as error:
             new_err_message = f'Сбой в работе программы {error}'
-            logger.error(new_err_message, exc_info=True)
-            send_message(bot, new_err_message)
+            if new_err_message != err_message:
+                logger.error(new_err_message, exc_info=True)
+                send_message(bot, new_err_message)
+                err_message = new_err_message
             time.sleep(RETRY_TIME)
         else:
-            logger.critical('Сбой в работе бота')
+            logger.debug('Бот работает нормально.')
     updater.start_polling()
     updater.idle()
 
