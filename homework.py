@@ -69,30 +69,33 @@ def check_response(response):
     if not isinstance(response, dict):
         raise TypeError('Формат ответа API отличается от ожидаемого')
     homework = response.get('homeworks')
-    if 'homeworks' is None:
+    if 'homeworks' not in response:
         raise KeyError('Ответ API не содержит ключ \'homeworks\'')
         logger.error('Ответ API не содержит ключ \'homeworks\'')
-        send_message(bot,'Ответ API не содержит ключ \'homeworks\'')
+        send_message(bot, 'Ответ API не содержит ключ \'homeworks\'')
     if not isinstance(homework, list):
         raise TypeError('Список домашних заданий не является списком')
         logger.error('Список домашних заданий не является списком')
         send_message(bot, 'Список домашних заданий не является списком')
-    return homework[0]
+    return homework
 
 
 def parse_status(homework):
     """Извлечение статуса о домашней работе."""
-    homework_name = homework['lesson_name']
-    homework_status = homework['status']
-    verdict = HOMEWORK_STATUSES[homework_status]
-    message = f'Изменился статус проверки работы "{homework_name}". {verdict}'
-    if homework_status is None:
-        logger.error('недокументированный статус домашней работы')
-        send_message(bot, 'недокументированный статус домашней работы')
-    if homework_name is None:
-        logger.error('нет названия домашней работы')
-        send_message(bot, 'нет названия домашней работы')
-    return message
+    if homework:
+        homework = homework[0]
+        homework_name = homework['lesson_name']
+        homework_status = homework['status']
+        verdict = HOMEWORK_STATUSES[homework_status]
+        message = f'Изменился статус проверки работы "{homework_name}". ' \
+                  f'{verdict}'
+        if homework_status is None:
+            logger.error('недокументированный статус домашней работы')
+            send_message(bot, 'недокументированный статус домашней работы')
+        if homework_name is None:
+            logger.error('нет названия домашней работы')
+            send_message(bot, 'нет названия домашней работы')
+        return message
 
 
 def check_tokens():
