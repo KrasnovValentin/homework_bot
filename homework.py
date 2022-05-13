@@ -96,6 +96,7 @@ def parse_status(homework):
             logger.error('нет названия домашней работы')
             send_message(bot, 'нет названия домашней работы')
         return message
+    return send_message(bot, 'на текущий момент список домашних работ пуст')
 
 
 def check_tokens():
