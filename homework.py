@@ -71,8 +71,9 @@ def check_response(response):
         logger.error('отсутствие ожидаемых ключей в ответе API')
         send_message(bot, 'отсутствие ожидаемых ключей в ответе API')
     homework = response.get('homeworks')
-    homework = homework[0]
-    return homework
+    if homework != []:
+        return homework[0]
+    print('Список работ пуст.')
 
 
 def parse_status(homework):
