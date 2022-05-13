@@ -5,7 +5,7 @@ import os
 
 import requests
 
-from telegram.ext import updater
+from telegram.ext import updater, Updater
 
 import telegram
 from dotenv import load_dotenv
@@ -15,7 +15,6 @@ load_dotenv()
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-TELEGRAM_TOKEN2 = os.getenv('TELEGRAM_TOKEN2')
 
 RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
@@ -115,7 +114,7 @@ def main():
 if check_tokens():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-    status = []
+    status = ''
     err_message = ''
     while True:
         try:
@@ -129,18 +128,13 @@ if check_tokens():
             time.sleep(RETRY_TIME)
         else:
             response = get_api_answer(current_timestamp)
-            status.append(parse_status(check_response(response)))
-            if len(status) == 1:
-                send_message(bot, status[0])
-                logger.info(f'Отправка сообщения: {status[0]}')
-            if len(status) == 2:
-                if status[0] != status[1]:
-                    send_message(bot, status[1])
-                    logger.info(f'Отправка сообщения: {status[0]}')
-                    break
-                else:
-                    logger.debug('отсутствие в ответе новых статусов')
-                    status.pop(1)
+            new_status = parse_status(check_response(response))
+            if new_status != status:
+                send_message(bot, new_status)
+                logger.info(f'Отправка сообщения: {new_status}')
+                break
+            else:
+                logger.debug('отсутствие в ответе новых статусов')
             time.sleep(RETRY_TIME)
     updater.start_polling()
     updater.idle()
