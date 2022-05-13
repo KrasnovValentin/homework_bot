@@ -27,7 +27,7 @@ HOMEWORK_STATUSES = {
 }
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = StreamHandler()
 logger.addHandler(handler)
 formatter = logging.Formatter(
@@ -93,7 +93,6 @@ def parse_status(homework):
             logger.error('нет названия домашней работы')
             send_message(bot, 'нет названия домашней работы')
         return message
-    return send_message(bot, 'на текущий момент список домашних работ пуст')
 
 
 def check_tokens():
@@ -128,6 +127,7 @@ if check_tokens():
                 send_message(bot, parse_status(homeworks_ok[0]))
             else:
                 logger.debug('Статус работ не изменился')
+                send_message(bot, 'Статус работ не изменился')
             current_timestamp = response.get('current_date', current_timestamp)
             time.sleep(RETRY_TIME)
         except Exception as error:
@@ -139,7 +139,6 @@ if check_tokens():
             logger.critical('Сбой в работе бота')
     updater.start_polling()
     updater.idle()
-    print(current_timestamp)
 
 if __name__ == '__main__':
     main()
