@@ -75,11 +75,11 @@ def check_response(response):
 
 def parse_status(homework_list):
     """Извлечение статуса о домашней работе."""
-    homework_status = homework_list['status']
+    homework_status = homework_list.get('status')
     if homework_status is None:
         logger.error('нет ключа \'status\'')
         raise KeyError('нет ключа \'status\'')
-    homework_name = homework_list['homework_name']
+    homework_name = homework_list.get('homework_name')
     if homework_name is None:
         logger.error('нет ключа \'homework_name\'')
         raise KeyError('нет ключа \'homework_name\'')
