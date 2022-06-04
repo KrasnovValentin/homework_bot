@@ -6,3 +6,5 @@ HOMEWORK_STATUSES = {
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
+
+IMG = ['approved.jpg', 'reviewing.jpg', 'rejected.jpg']

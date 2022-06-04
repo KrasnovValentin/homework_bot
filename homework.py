@@ -38,6 +38,12 @@ def send_message(bot, message):
             chat_id=TELEGRAM_CHAT_ID,
             text=message
         )
+        if 'Ура' in message:
+            bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[0], 'rb'))
+        elif 'проверк' in message:
+            bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[1], 'rb'))
+        elif 'замеч' in message:
+            bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[2], 'rb'))
     except telegram.error.TelegramError as error:
         message = f'Ошибка отправки сообщения {error}'
         logger.error(message)
@@ -79,7 +85,7 @@ def parse_status(homework_list):
     if homework_status is None:
         logger.error('нет ключа \'status\'')
         raise KeyError('нет ключа \'status\'')
-    homework_name = homework_list.get('homework_name')
+    homework_name = homework_list.get('lesson_name')
     if homework_name is None:
         logger.error('нет ключа \'homework_name\'')
         raise KeyError('нет ключа \'homework_name\'')
@@ -123,7 +129,7 @@ def main():
             else:
                 logger.debug('Статус работ не изменился')
             current_timestamp = response.get('current_date', current_timestamp)
-            time.sleep(settings.RETRY_TIME)
+
         except Exception as error:
             new_err_message = f'Сбой в работе программы {error}'
             if new_err_message != err_message:
