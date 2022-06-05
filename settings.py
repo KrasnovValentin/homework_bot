@@ -7,4 +7,4 @@ HOMEWORK_STATUSES = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
-IMG = ['approved.jpg', 'reviewing.jpg', 'rejected.jpg']
+# IMG = ['approved.jpg', 'reviewing.jpg', 'rejected.jpg']

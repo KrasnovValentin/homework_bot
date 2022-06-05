@@ -38,12 +38,15 @@ def send_message(bot, message):
             chat_id=TELEGRAM_CHAT_ID,
             text=message
         )
-        if 'Ура' in message:
-            bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[0], 'rb'))
-        elif 'проверк' in message:
-            bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[1], 'rb'))
-        elif 'замеч' in message:
-            bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[2], 'rb'))
+        img = [img for (img, verdict) in settings.HOMEWORK_STATUSES.items()
+               if verdict in message]
+        bot.send_photo(TELEGRAM_CHAT_ID, open(img[0]+'.jpg', 'rb'))
+        # if 'Ура' in message:
+        #     bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[0], 'rb'))
+        # elif 'проверк' in message:
+        #     bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[1], 'rb'))
+        # elif 'замеч' in message:
+        #     bot.send_photo(TELEGRAM_CHAT_ID, open(settings.IMG[2], 'rb'))
     except telegram.error.TelegramError as error:
         message = f'Ошибка отправки сообщения {error}'
         logger.error(message)
